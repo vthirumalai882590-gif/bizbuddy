@@ -19,8 +19,29 @@ dotenv.config()
 const app = express()
 const PORT = process.env.PORT || 5001
 
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',')
+  : [
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'http://localhost:3002',
+      'http://localhost:5173',
+      'http://localhost:5174'
+    ];
+
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002'],
+  origin: (origin, callback) => {
+    // Allow server-to-server or postman requests (no origin)
+    if (!origin) return callback(null, true);
+    
+    // Check if the origin matches our allowed list or ends with .vercel.app
+    const isAllowed = allowedOrigins.includes(origin) || origin.endsWith('.vercel.app');
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS policy blocked request from origin: ${origin}`));
+    }
+  },
   credentials: true
 }))
 app.use(express.json())
