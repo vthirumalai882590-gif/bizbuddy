@@ -59,8 +59,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [fetchUserProfile])
 
   const signInWithGoogle = async () => {
-    const result = await signInWithPopup(auth, googleProvider)
-    await fetchUserProfile(result.user)
+    try {
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+      if (isMobile) {
+        const { signInWithRedirect } = await import('firebase/auth')
+        await signInWithRedirect(auth, googleProvider)
+      } else {
+        const result = await signInWithPopup(auth, googleProvider)
+        await fetchUserProfile(result.user)
+      }
+    } catch (err: any) {
+      console.error('Google sign in error:', err)
+      // Fallback to redirect if popup got blocked or closed
+      if (err.code === 'auth/popup-blocked' || err.code === 'auth/popup-closed-by-user') {
+        const { signInWithRedirect } = await import('firebase/auth')
+        await signInWithRedirect(auth, googleProvider)
+      } else {
+        throw err
+      }
+    }
   }
 
   const signInWithEmail = async (email: string, password: string) => {
