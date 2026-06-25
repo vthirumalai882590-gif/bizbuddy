@@ -69,6 +69,18 @@ app.get('/api/health', (req: any, res: any) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
 })
 
+// Serve frontend static assets in production
+const frontendDistPath = path.join(__dirname, '../../frontend/dist')
+if (fs.existsSync(frontendDistPath)) {
+  app.use(express.static(frontendDistPath))
+  app.get('*', (req: any, res: any, next: any) => {
+    if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
+      return next()
+    }
+    res.sendFile(path.join(frontendDistPath, 'index.html'))
+  })
+}
+
 app.listen(PORT, () => {
   console.log(`✅ Backend running at http://localhost:${PORT}`)
 })

@@ -1,0 +1,11 @@
+node_modules
+**/node_modules
+frontend/dist
+backend/dist
+backend/uploads
+.git
+.gitignore
+.env
+*.log
+README.md
+render.yaml
