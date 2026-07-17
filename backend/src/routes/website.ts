@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { GoogleGenAI } from '@google/genai'
 import dotenv from 'dotenv'
+import { loadWebsiteConfig, saveWebsiteConfig } from '../services/database'
 
 dotenv.config()
 
@@ -10,12 +11,14 @@ const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash'
 
 // GET: Fetch saved website configuration
 router.get('/', async (req: any, res: any) => {
-  // In a full application, you would fetch this from Firestore using req.uid
-  res.json({ success: true, data: null })
+  const userId = req.uid || 'demo-user'
+  const config = await loadWebsiteConfig(userId)
+  res.json({ success: true, data: config })
 })
 
 // POST: Generate a highly unique, customized website framework using Gemini
 router.post('/', async (req: any, res: any) => {
+  const userId = req.uid || 'demo-user'
   try {
     const { businessName, description, theme, products } = req.body
 
@@ -52,7 +55,6 @@ router.post('/', async (req: any, res: any) => {
       contents: `Business Name: ${businessName || 'Local Business'}\nTheme Style: ${theme || 'Vibrant'}\nDescription: ${description}`,
       config: {
         systemInstruction: systemPrompt,
-        // Enforce a strict JSON response back from Gemini
         responseMimeType: 'application/json'
       }
     })
@@ -60,17 +62,19 @@ router.post('/', async (req: any, res: any) => {
     const text = response.text
     if (!text) throw new Error('AI failed to generate a design structure.')
 
-    // Parse the string response back into a true JSON object
     const websiteConfig = JSON.parse(text)
+    const savedConfig = {
+      id: Date.now().toString(),
+      ...websiteConfig,
+      products: products || [],
+      createdAt: new Date().toISOString()
+    }
+
+    await saveWebsiteConfig(savedConfig, userId)
 
     res.json({
       success: true,
-      data: {
-        id: Date.now().toString(),
-        ...websiteConfig,
-        products: products || [], // Pass existing user products straight through to the preview state
-        createdAt: new Date().toISOString()
-      }
+      data: savedConfig
     })
 
   } catch (err) {
@@ -82,9 +86,12 @@ router.post('/', async (req: any, res: any) => {
 
 // PUT: Save manual edits back down to the workspace
 router.put('/', async (req: any, res: any) => {
+  const userId = req.uid || 'demo-user'
+  const savedConfig = { ...req.body, updatedAt: new Date().toISOString() }
+  await saveWebsiteConfig(savedConfig, userId)
   res.json({ 
     success: true, 
-    data: { ...req.body, updatedAt: new Date().toISOString() } 
+    data: savedConfig
   })
 })
 

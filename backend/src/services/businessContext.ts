@@ -10,8 +10,8 @@ export interface BusinessContext {
 }
 
 export async function getBusinessContext(uid: string): Promise<BusinessContext> {
-  const expenses = loadExpenses()
-  const income = loadIncome()
+  const expenses = await loadExpenses(uid)
+  const income = await loadIncome(uid)
 
   const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0)
   const totalIncome = income.reduce((sum, i) => sum + i.amount, 0)

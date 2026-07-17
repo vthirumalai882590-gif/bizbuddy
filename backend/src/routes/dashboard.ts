@@ -5,8 +5,9 @@ import { receipts } from './receipts';
 const router = Router();
 
 router.get('/overview', async (req: any, res: any) => {
-  const expenses = loadExpenses();
-  const income = loadIncome();
+  const userId = req.uid || 'demo-user';
+  const expenses = await loadExpenses(userId);
+  const income = await loadIncome(userId);
 
   const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
   const totalIncome = income.reduce((sum, i) => sum + i.amount, 0);
@@ -61,8 +62,9 @@ router.get('/overview', async (req: any, res: any) => {
 });
 
 router.get('/activity', async (req: any, res: any) => {
-  const expenses = loadExpenses();
-  const income = loadIncome();
+  const userId = req.uid || 'demo-user';
+  const expenses = await loadExpenses(userId);
+  const income = await loadIncome(userId);
 
   const activities: any[] = [];
 

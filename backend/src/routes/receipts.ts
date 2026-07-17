@@ -3,9 +3,11 @@ import multer from 'multer'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import fs from 'fs'
 import path from 'path'
+import { loadReceipts, saveReceipts, Receipt } from '../services/database'
 
 const router = Router()
-// In-memory runtime database array
+
+// Maintain export for backward compatibility or imports in other routes
 export let receipts: any[] = []
 
 const upload = multer({
@@ -31,27 +33,36 @@ All prices must be numbers, not strings.`
 
 // ─── GET: LIST SYSTEM RECORDS ────────────────────────────────────────
 router.get('/', async (req: any, res: any) => {
-  res.json({ success: true, data: receipts })
+  const userId = req.uid || 'demo-user'
+  const list = await loadReceipts(userId)
+  // Sync the export array just in case other files read it
+  receipts = list
+  res.json({ success: true, data: list })
 })
 
 // ─── POST: INITIAL FILE UPLOAD & BACKGROUND TEXT EXTRACTION ──────────
 router.post('/upload', upload.single('receipt'), async (req: any, res: any) => {
+  const userId = req.uid || 'demo-user'
   try {
     if (!req.file) {
       return res.status(400).json({ success: false, error: 'No file uploaded' })
     }
 
-    const receipt = {
+    const receipt: Receipt = {
       id:         Date.now().toString(),
-      userId:    'demo-user',
+      userId:    userId,
       imageUrl:  `http://localhost:5001/uploads/${req.file.filename}`,
       status:    'processing',
       createdAt: new Date().toISOString(),
-      _localPath: req.file.path, // Preserved for retry fallback availability
+      _localPath: req.file.path, 
       _mimeType:  req.file.mimetype,
     }
 
-    receipts.unshift(receipt)
+    const list = await loadReceipts(userId)
+    list.unshift(receipt)
+    await saveReceipts(list, userId)
+    receipts = list
+
     res.json({ success: true, data: receipt })
 
     // Background process the Gemini Vision extraction asynchronously
@@ -60,7 +71,6 @@ router.post('/upload', upload.single('receipt'), async (req: any, res: any) => {
         throw new Error("GEMINI_API_KEY variable is missing inside the server .env profile")
       }
 
-      // FIX: Dynamically read your GEMINI_MODEL setting from your .env file
       const model = genAI.getGenerativeModel({ 
         model: process.env.GEMINI_MODEL || 'gemini-1.5-flash',
         generationConfig: { responseMimeType: "application/json" } as any
@@ -88,10 +98,11 @@ router.post('/upload', upload.single('receipt'), async (req: any, res: any) => {
       
       const extractedData = JSON.parse(clean)
 
-      const index = receipts.findIndex(r => r.id === receipt.id)
+      const updateList = await loadReceipts(userId)
+      const index = updateList.findIndex(r => r.id === receipt.id)
       if (index !== -1) {
-        receipts[index] = {
-          ...receipts[index],
+        updateList[index] = {
+          ...updateList[index],
           status: 'completed',
           extractedData: {
             vendor:      extractedData.vendor      || 'Unknown Vendor',
@@ -102,16 +113,21 @@ router.post('/upload', upload.single('receipt'), async (req: any, res: any) => {
             amount:      Number(extractedData.totalAmount) || 0,
           },
         }
+        await saveReceipts(updateList, userId)
+        receipts = updateList
       }
     } catch (aiError: any) {
       console.error('Gemini Vision exception pipeline loop:', aiError)
-      const index = receipts.findIndex(r => r.id === receipt.id)
+      const updateList = await loadReceipts(userId)
+      const index = updateList.findIndex(r => r.id === receipt.id)
       if (index !== -1) {
-        receipts[index] = { 
-          ...receipts[index], 
+        updateList[index] = { 
+          ...updateList[index], 
           status: 'failed',
           errorDetails: aiError.message || 'Parsing failure context'
         }
+        await saveReceipts(updateList, userId)
+        receipts = updateList
       }
     }
   } catch (error) {
@@ -125,7 +141,9 @@ router.post('/upload', upload.single('receipt'), async (req: any, res: any) => {
 
 // ─── GET: POLL SINGLE RECEIPT STATUS ─────────────────────────────────
 router.get('/:id', async (req: any, res: any) => {
-  const receipt = receipts.find(r => r.id === req.params.id)
+  const userId = req.uid || 'demo-user'
+  const list = await loadReceipts(userId)
+  const receipt = list.find(r => r.id === req.params.id)
   if (!receipt) {
     return res.status(404).json({ success: false, error: 'Receipt context not found' })
   }
@@ -134,19 +152,25 @@ router.get('/:id', async (req: any, res: any) => {
 
 // ─── POST: LINK EXISTING TRANSACTION ─────────────────────────────────
 router.post('/:receiptId/link', async (req: any, res: any) => {
+  const userId = req.uid || 'demo-user'
   const { expenseId } = req.body
-  const index = receipts.findIndex(r => r.id === req.params.receiptId)
+  const list = await loadReceipts(userId)
+  const index = list.findIndex(r => r.id === req.params.receiptId)
   if (index !== -1) {
-    receipts[index].linkedExpenseId = expenseId
+    list[index].linkedExpenseId = expenseId
+    await saveReceipts(list, userId)
+    receipts = list
   }
   res.json({ success: true, message: 'Receipt linked to expense successfully' })
 })
 
 // ─── DELETE: REMOVE TRANSCRIPTION AND DISK STORAGE ───────────────────
 router.delete('/:id', async (req: any, res: any) => {
+  const userId = req.uid || 'demo-user'
   try {
     const targetId = req.params.id
-    const targetReceipt = receipts.find(r => r.id === targetId)
+    const list = await loadReceipts(userId)
+    const targetReceipt = list.find(r => r.id === targetId)
 
     if (!targetReceipt) {
       return res.status(404).json({ success: false, error: 'Receipt details matching target missing' })
@@ -160,7 +184,9 @@ router.delete('/:id', async (req: any, res: any) => {
       }
     }
 
-    receipts = receipts.filter(r => r.id !== targetId)
+    const filteredList = list.filter(r => r.id !== targetId)
+    await saveReceipts(filteredList, userId)
+    receipts = filteredList
     return res.json({ success: true, message: 'Receipt context removed' })
   } catch (err: any) {
     console.error('Destruction middleware crash log:', err)
@@ -170,15 +196,17 @@ router.delete('/:id', async (req: any, res: any) => {
 
 // ─── POST: MANUAL RETRY FOR FAILED CONTEXT ENTRIES ───────────────────
 router.post('/:id/retry', async (req: any, res: any) => {
+  const userId = req.uid || 'demo-user'
   try {
     const targetId = req.params.id
-    const index = receipts.findIndex(r => r.id === targetId)
+    const list = await loadReceipts(userId)
+    const index = list.findIndex(r => r.id === targetId)
 
     if (index === -1) {
       return res.status(404).json({ success: false, error: 'Requested receipt context missing' })
     }
 
-    const targetReceipt = receipts[index]
+    const targetReceipt = list[index]
 
     if (!targetReceipt._localPath || !fs.existsSync(targetReceipt._localPath)) {
       return res.status(400).json({ 
@@ -187,11 +215,12 @@ router.post('/:id/retry', async (req: any, res: any) => {
       })
     }
 
-    receipts[index].status = 'processing'
+    list[index].status = 'processing'
+    await saveReceipts(list, userId)
+    receipts = list
     res.json({ success: true, message: 'Worker reprocessing scheduled' })
 
     try {
-      // FIX: Dynamically read your GEMINI_MODEL setting from your .env file here too
       const model = genAI.getGenerativeModel({ 
         model: process.env.GEMINI_MODEL || 'gemini-1.5-flash',
         generationConfig: { responseMimeType: "application/json" } as any
@@ -219,10 +248,11 @@ router.post('/:id/retry', async (req: any, res: any) => {
       
       const extractedData = JSON.parse(clean)
 
-      const updateIdx = receipts.findIndex(r => r.id === targetId)
+      const updateList = await loadReceipts(userId)
+      const updateIdx = updateList.findIndex(r => r.id === targetId)
       if (updateIdx !== -1) {
-        receipts[updateIdx] = {
-          ...receipts[updateIdx],
+        updateList[updateIdx] = {
+          ...updateList[updateIdx],
           status: 'completed',
           extractedData: {
             vendor:      extractedData.vendor      || 'Unknown Vendor',
@@ -233,12 +263,17 @@ router.post('/:id/retry', async (req: any, res: any) => {
             amount:      Number(extractedData.totalAmount) || 0,
           },
         }
+        await saveReceipts(updateList, userId)
+        receipts = updateList
       }
     } catch (aiError) {
       console.error('Worker tracking failure context recovery exception:', aiError)
-      const errIdx = receipts.findIndex(r => r.id === targetId)
+      const errList = await loadReceipts(userId)
+      const errIdx = errList.findIndex(r => r.id === targetId)
       if (errIdx !== -1) {
-        receipts[errIdx].status = 'failed'
+        errList[errIdx].status = 'failed'
+        await saveReceipts(errList, userId)
+        receipts = errList
       }
     }
   } catch (error: any) {
@@ -247,5 +282,4 @@ router.post('/:id/retry', async (req: any, res: any) => {
   }
 })
 
-// FIX: Changed from CommonJS module.exports to clean TypeScript ESM Export
 export default router

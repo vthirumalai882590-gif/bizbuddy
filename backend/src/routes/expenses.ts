@@ -8,16 +8,17 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '')
 
 // ─── GET: LIST METRICS ───────────────────────────────────────────────
 router.get('/', async (req: any, res: any) => {
-  const expenses = loadExpenses()
+  const expenses = await loadExpenses(req.uid)
   res.json({ success: true, data: expenses })
 })
 
 // ─── POST: APPEND NEW MANUAL ENTRY ───────────────────────────────────
 router.post('/', async (req: any, res: any) => {
-  const expenses = loadExpenses()
+  const userId = req.uid || 'demo-user'
+  const expenses = await loadExpenses(userId)
   const newExpense = {
     id: Date.now().toString(),
-    userId: 'demo',
+    userId: userId,
     currency: 'INR',
     amount: Number(req.body.amount) || 0,
     category: req.body.category || 'other',
@@ -30,13 +31,14 @@ router.post('/', async (req: any, res: any) => {
   }
 
   expenses.unshift(newExpense)
-  saveExpenses(expenses)
+  await saveExpenses(expenses, userId)
   res.json({ success: true, data: newExpense })
 })
 
 // ─── PUT: RECORD MUTATION UPDATE ─────────────────────────────────────
 router.put('/:id', async (req: any, res: any) => {
-  const expenses = loadExpenses()
+  const userId = req.uid || 'demo-user'
+  const expenses = await loadExpenses(userId)
   const index = expenses.findIndex(e => e.id === req.params.id)
   if (index !== -1) {
     expenses[index] = {
@@ -45,7 +47,7 @@ router.put('/:id', async (req: any, res: any) => {
       amount: Number(req.body.amount) ?? expenses[index].amount,
       updatedAt: new Date().toISOString()
     }
-    saveExpenses(expenses)
+    await saveExpenses(expenses, userId)
     return res.json({ success: true, data: expenses[index] })
   }
   res.status(404).json({ success: false, error: 'Target transaction row missing' })
@@ -53,12 +55,13 @@ router.put('/:id', async (req: any, res: any) => {
 
 // ─── DELETE: PRUNE RECORD ROW ────────────────────────────────────────
 router.delete('/:id', async (req: any, res: any) => {
-  let expenses = loadExpenses()
+  const userId = req.uid || 'demo-user'
+  let expenses = await loadExpenses(userId)
   const initialLength = expenses.length
   expenses = expenses.filter(e => e.id !== req.params.id)
   
   if (expenses.length !== initialLength) {
-    saveExpenses(expenses)
+    await saveExpenses(expenses, userId)
     return res.json({ success: true, message: 'Expense record pruned successfully' })
   }
   res.status(404).json({ success: false, error: 'Target record row not found' })
@@ -66,12 +69,13 @@ router.delete('/:id', async (req: any, res: any) => {
 
 // ─── GET: AI INSIGHT ENGINE STRATEGY ──────────────────────────────────
 router.get('/ai-coach', async (req: any, res: any) => {
+  const userId = req.uid || 'demo-user'
   try {
     if (!process.env.GEMINI_API_KEY) {
       return res.status(500).json({ success: false, error: 'Gemini access configuration missing' })
     }
 
-    const expenses = loadExpenses()
+    const expenses = await loadExpenses(userId)
     const totalInvestment = expenses.reduce((sum, e) => sum + e.amount, 0)
     const inventoryCosts = expenses.filter(e => e.category === 'inventory').reduce((sum, e) => sum + e.amount, 0)
     
@@ -86,7 +90,7 @@ router.get('/ai-coach', async (req: any, res: any) => {
       return acc
     }, {})
 
-    const incomes = loadIncome()
+    const incomes = await loadIncome(userId)
     const totalIncome = incomes.reduce((sum, i) => sum + i.amount, 0)
     const netProfit = totalIncome - totalInvestment
 
@@ -112,10 +116,10 @@ router.get('/ai-coach', async (req: any, res: any) => {
     console.error('AI Coaching exception:', err)
     
     // Rule-based offline fallback when API key hits quota limit
-    const expenses = loadExpenses()
+    const expenses = await loadExpenses(userId)
     const totalInvestment = expenses.reduce((sum, e) => sum + e.amount, 0)
     const inventoryCosts = expenses.filter(e => e.category === 'inventory').reduce((sum, e) => sum + e.amount, 0)
-    const incomes = loadIncome()
+    const incomes = await loadIncome(userId)
     const totalIncome = incomes.reduce((sum, i) => sum + i.amount, 0)
     const netProfit = totalIncome - totalInvestment
     const margin = totalIncome > 0 ? ((netProfit / totalIncome) * 100).toFixed(0) : '0'
@@ -142,6 +146,7 @@ router.get('/ai-coach', async (req: any, res: any) => {
 
 // ─── POST: INTERACTIVE AI CHAT ASSISTANT FOR LIVE DATA ──────────────
 router.post('/chat', async (req: any, res: any) => {
+  const userId = req.uid || 'demo-user'
   try {
     if (!process.env.GEMINI_API_KEY) {
       return res.status(500).json({ success: false, error: 'Gemini configuration missing' })
@@ -151,12 +156,11 @@ router.post('/chat', async (req: any, res: any) => {
     const promptContext = req.body.context || ''
     const history = (req.body.history || []) as ChatTurn[]
 
-    const expenses = loadExpenses()
-    // Force real-time re-evaluation of parameters from database
+    const expenses = await loadExpenses(userId)
     const totalInvestment = expenses.reduce((sum, e) => sum + e.amount, 0)
     const inventoryCosts = expenses.filter(e => e.category === 'inventory').reduce((sum, e) => sum + e.amount, 0)
 
-    const incomes = loadIncome()
+    const incomes = await loadIncome(userId)
     const totalIncome = incomes.reduce((sum, i) => sum + i.amount, 0)
     const netProfit = totalIncome - totalInvestment
 
@@ -182,9 +186,9 @@ router.post('/chat', async (req: any, res: any) => {
     
     // Offline local chat fallback
     const message = req.body.message || ''
-    const expenses = loadExpenses()
+    const expenses = await loadExpenses(userId)
     const totalInvestment = expenses.reduce((sum, e) => sum + e.amount, 0)
-    const incomes = loadIncome()
+    const incomes = await loadIncome(userId)
     const totalIncome = incomes.reduce((sum, i) => sum + i.amount, 0)
     const netProfit = totalIncome - totalInvestment
 

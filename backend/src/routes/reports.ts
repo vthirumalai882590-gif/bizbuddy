@@ -4,8 +4,9 @@ import { loadExpenses, loadIncome } from '../services/database'
 const router = Router()
 
 router.get('/financial', async (req: any, res: any) => {
-  const expenses = loadExpenses()
-  const income = loadIncome()
+  const userId = req.uid || 'demo-user'
+  const expenses = await loadExpenses(userId)
+  const income = await loadIncome(userId)
 
   const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0)
   const totalIncome = income.reduce((sum, i) => sum + i.amount, 0)
@@ -52,8 +53,9 @@ router.get('/financial', async (req: any, res: any) => {
 })
 
 router.post('/loan-readiness', async (req: any, res: any) => {
-  const expenses = loadExpenses()
-  const income = loadIncome()
+  const userId = req.uid || 'demo-user'
+  const expenses = await loadExpenses(userId)
+  const income = await loadIncome(userId)
 
   const totalRevenue = income.reduce((sum, s) => sum + s.amount, 0)
   const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0)

@@ -13,6 +13,7 @@ import reportRoutes from './routes/reports'
 import marketingRoutes from './routes/marketing'
 import websiteRoutes from './routes/website'
 import dashboardRoutes from './routes/dashboard'
+import { authMiddleware } from './middleware/auth'
 
 dotenv.config()
 
@@ -26,7 +27,9 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
       'http://localhost:3001',
       'http://localhost:3002',
       'http://localhost:5173',
-      'http://localhost:5174'
+      'http://localhost:5174',
+      'http://localhost:5000',
+      'http://localhost:5001'
     ];
 
 app.use(cors({
@@ -56,14 +59,14 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')))
 app.use(express.urlencoded({ extended: true }))
 
 // Apply routes
-app.use('/api/expenses',  expenseRoutes)
-app.use('/api/income',    incomeRoutes)
-app.use('/api/receipts',  receiptRoutes)
-app.use('/api/ai',        aiRoutes)
-app.use('/api/reports',   reportRoutes)
-app.use('/api/marketing', marketingRoutes)
-app.use('/api/website',   websiteRoutes)
-app.use('/api/dashboard', dashboardRoutes)
+app.use('/api/expenses',  authMiddleware, expenseRoutes)
+app.use('/api/income',    authMiddleware, incomeRoutes)
+app.use('/api/receipts',  authMiddleware, receiptRoutes)
+app.use('/api/ai',        authMiddleware, aiRoutes)
+app.use('/api/reports',   authMiddleware, reportRoutes)
+app.use('/api/marketing', authMiddleware, marketingRoutes)
+app.use('/api/website',   authMiddleware, websiteRoutes)
+app.use('/api/dashboard', authMiddleware, dashboardRoutes)
 
 app.get('/api/health', (req: any, res: any) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
