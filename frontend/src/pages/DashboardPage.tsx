@@ -3,6 +3,7 @@ import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianG
 import { TrendingUp, TrendingDown, Wallet, Activity, ArrowUpRight, ArrowDownRight, Receipt, Megaphone } from 'lucide-react'
 import { dashboardApi } from '@/services/api'
 import { useAuth } from '@/context/AuthContext'
+import { useTranslation } from '@/hooks/useTranslation'
 import { clsx } from 'clsx'
 import { format } from 'date-fns'
 
@@ -47,6 +48,7 @@ const ACTIVITY_ICON = {
 
 export default function DashboardPage() {
   const { user } = useAuth()
+  const { t } = useTranslation()
 
   const { data: overview = EMPTY_OVERVIEW } = useQuery<Overview>({
     queryKey: ['dashboard-overview'],
@@ -65,15 +67,15 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-black text-slate-800">Welcome back, {firstName} 👋</h1>
-        <p className="text-sm text-gray-500">Here's how {user?.businessName ?? 'your business'} is doing today</p>
+        <h1 className="text-2xl font-black text-slate-800">{t('welcomeBack')}, {firstName} 👋</h1>
+        <p className="text-sm text-gray-500">{t('howBusinessIsDoing')}</p>
       </div>
 
       {/* Stat cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white p-4 border border-gray-100 rounded-xl shadow-xs flex flex-col space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase text-gray-400">Total Income</span>
+            <span className="text-xs font-bold uppercase text-gray-400">{t('totalSales')}</span>
             <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center"><ArrowUpRight size={15} className="text-green-600" /></div>
           </div>
           <span className="text-lg font-black text-slate-800">₹{overview.totalIncome.toLocaleString('en-IN')}</span>
@@ -81,7 +83,7 @@ export default function DashboardPage() {
         
         <div className="bg-white p-4 border border-gray-100 rounded-xl shadow-xs flex flex-col space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase text-gray-400">Total Expenses</span>
+            <span className="text-xs font-bold uppercase text-gray-400">{t('totalExpenses')}</span>
             <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center"><ArrowDownRight size={15} className="text-red-600" /></div>
           </div>
           <span className="text-lg font-black text-slate-800">₹{overview.totalExpenses.toLocaleString('en-IN')}</span>
@@ -89,7 +91,7 @@ export default function DashboardPage() {
         
         <div className="bg-white p-4 border border-gray-100 rounded-xl shadow-xs flex flex-col space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase text-gray-400">Net Profit</span>
+            <span className="text-xs font-bold uppercase text-gray-400">{t('netProfit')}</span>
             <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center"><Wallet size={15} className="text-purple-600" /></div>
           </div>
           <span className="text-lg font-black text-slate-800">₹{overview.netProfit.toLocaleString('en-IN')}</span>
@@ -97,7 +99,7 @@ export default function DashboardPage() {
         
         <div className="bg-white p-4 border border-gray-100 rounded-xl shadow-xs flex flex-col space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase text-gray-400">Business Health</span>
+            <span className="text-xs font-bold uppercase text-gray-400">{t('healthScore')}</span>
             <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center"><Activity size={15} className="text-amber-600" /></div>
           </div>
           <span className="text-lg font-black text-slate-800">{overview.healthScore}/100</span>
@@ -107,7 +109,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Cash flow chart */}
         <div className="bg-white p-5 border border-gray-100 rounded-2xl shadow-xs lg:col-span-2">
-          <h3 className="font-bold text-slate-800 mb-4 text-sm">Cash Flow — Last 14 Days</h3>
+          <h3 className="font-bold text-slate-800 mb-4 text-sm">{t('cashFlow14Days')}</h3>
           <ResponsiveContainer width="100%" height={260}>
             <AreaChart data={overview.cashFlow}>
               <defs>
@@ -135,7 +137,7 @@ export default function DashboardPage() {
 
         {/* Recent activity */}
         <div className="bg-white p-5 border border-gray-100 rounded-2xl shadow-xs">
-          <h3 className="font-bold text-slate-800 mb-4 text-sm">Recent Activity</h3>
+          <h3 className="font-bold text-slate-800 mb-4 text-sm">{t('recentActivities')}</h3>
           <div className="space-y-4">
             {activity.map((item) => {
               const Icon = ACTIVITY_ICON[item.type]

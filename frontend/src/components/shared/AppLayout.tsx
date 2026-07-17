@@ -7,25 +7,27 @@ import {
   Sparkles,
 } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
+import { useTranslation } from '@/hooks/useTranslation'
 import toast from 'react-hot-toast'
 import { clsx } from 'clsx'
 
 // ─── UPDATED NAVIGATION MATRIX ──────────────────────────────────────────────
 const navItems = [
-  { to: '/dashboard',    icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/investments',  icon: TrendingDown,    label: 'Investments' }, 
-  { to: '/profit-loss',  icon: TrendingUp,      label: 'Profit & Loss' },
-  { to: '/stocks',       icon: Layers,          label: 'Store Stock' }, // Replaced Receipts with Store Stock
-  { to: '/reports',      icon: FileText,        label: 'Reports' },
-  { to: '/loan',         icon: CreditCard,      label: 'Loan Readiness' },
-  { to: '/marketing',    icon: Megaphone,       label: 'Marketing' },
-  { to: '/website',      icon: Globe,           label: 'AI Website' },
-  { to: '/ai-advisor',   icon: Bot,             label: 'AI Advisor' },
-  { to: '/settings',     icon: Settings,        label: 'Settings' },
+  { to: '/dashboard',    icon: LayoutDashboard, key: 'dashboard' },
+  { to: '/investments',  icon: TrendingDown,    key: 'investments' }, 
+  { to: '/profit-loss',  icon: TrendingUp,      key: 'profitLoss' },
+  { to: '/stocks',       icon: Layers,          key: 'storeStock' }, 
+  { to: '/reports',      icon: FileText,        key: 'reports' },
+  { to: '/loan',         icon: CreditCard,      key: 'loanReadiness' },
+  { to: '/marketing',    icon: Megaphone,       key: 'marketing' },
+  { to: '/website',      icon: Globe,           key: 'aiWebsite' },
+  { to: '/ai-advisor',   icon: Bot,             key: 'aiAdvisor' },
+  { to: '/settings',     icon: Settings,        key: 'settings' },
 ]
 
 export default function AppLayout() {
   const { user, logout } = useAuth()
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
@@ -60,7 +62,7 @@ export default function AppLayout() {
 
       {/* Navigation */}
       <nav className="flex-1 space-y-0.5">
-        {navItems.map(({ to, icon: Icon, label }) => (
+        {navItems.map(({ to, icon: Icon, key }) => (
           <NavLink
             key={to}
             to={to}
@@ -70,7 +72,7 @@ export default function AppLayout() {
             }
           >
             <Icon size={18} />
-            {label}
+            {t(key)}
           </NavLink>
         ))}
       </nav>
@@ -105,13 +107,13 @@ export default function AppLayout() {
                 className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
                 onClick={() => setProfileOpen(false)}
               >
-                <Settings size={15} /> Settings
+                <Settings size={15} /> {t('settings')}
               </NavLink>
               <button
                 onClick={handleLogout}
                 className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50"
               >
-                <LogOut size={15} /> Sign out
+                <LogOut size={15} /> {t('logout')}
               </button>
             </div>
           )}

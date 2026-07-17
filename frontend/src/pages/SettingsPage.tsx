@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '@/context/AuthContext'
+import { useTranslation } from '@/hooks/useTranslation'
 import toast from 'react-hot-toast'
 import { Loader2, LogOut } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
@@ -11,6 +12,7 @@ const LANGUAGES: { code: 'en' | 'hi' | 'ta' | 'te' | 'mr' | 'bn' | 'gu'; label: 
 
 export default function SettingsPage() {
   const { user, updateUserProfile, logout } = useAuth()
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [saving, setSaving] = useState(false)
 
@@ -41,12 +43,12 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6 max-w-2xl">
       <div>
-        <h1 className="section-title">Settings</h1>
-        <p className="section-subtitle">Manage your profile and business details</p>
+        <h1 className="section-title">{t('settings')}</h1>
+        <p className="section-subtitle">{t('manageProfile')}</p>
       </div>
 
       <div className="card space-y-4">
-        <h3 className="font-semibold text-gray-900">Profile</h3>
+        <h3 className="font-semibold text-gray-900">{t('profile')}</h3>
         <div className="flex items-center gap-4">
           {user?.photoURL ? (
             <img src={user.photoURL} className="w-14 h-14 rounded-full object-cover" alt="" />
@@ -61,35 +63,35 @@ export default function SettingsPage() {
           </div>
         </div>
         <div>
-          <label className="label">Display name</label>
+          <label className="label">{t('displayName')}</label>
           <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="input" />
         </div>
       </div>
 
       <div className="card space-y-4">
-        <h3 className="font-semibold text-gray-900">Business Details</h3>
+        <h3 className="font-semibold text-gray-900">{t('businessDetails')}</h3>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="label">Business name</label>
+            <label className="label">{t('businessName')}</label>
             <input value={businessName} onChange={(e) => setBusinessName(e.target.value)} className="input" />
           </div>
           <div>
-            <label className="label">Business type</label>
+            <label className="label">{t('businessType')}</label>
             <input value={businessType} onChange={(e) => setBusinessType(e.target.value)} className="input" />
           </div>
           <div>
-            <label className="label">City</label>
+            <label className="label">{t('city')}</label>
             <input value={city} onChange={(e) => setCity(e.target.value)} className="input" />
           </div>
           <div>
-            <label className="label">Phone</label>
+            <label className="label">{t('phone')}</label>
             <input value={phone} onChange={(e) => setPhone(e.target.value)} className="input" />
           </div>
         </div>
       </div>
 
       <div className="card space-y-4">
-        <h3 className="font-semibold text-gray-900">Language</h3>
+        <h3 className="font-semibold text-gray-900">{t('language')}</h3>
         <div className="grid grid-cols-4 gap-2">
           {LANGUAGES.map((l) => (
             <button
@@ -107,11 +109,11 @@ export default function SettingsPage() {
 
       <div className="flex items-center justify-between">
         <button onClick={handleLogout} className="btn-secondary flex items-center gap-2 text-red-600">
-          <LogOut size={15} /> Sign out
+          <LogOut size={15} /> {t('logout')}
         </button>
         <button onClick={handleSave} disabled={saving} className="btn-primary flex items-center gap-2">
           {saving && <Loader2 size={15} className="animate-spin" />}
-          Save Changes
+          {t('saveSettings')}
         </button>
       </div>
     </div>
