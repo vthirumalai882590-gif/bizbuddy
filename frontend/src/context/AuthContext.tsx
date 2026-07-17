@@ -7,6 +7,7 @@ import {
   signOut,
   updateProfile,
   sendPasswordResetEmail,
+  signInWithRedirect,
   type User as FirebaseUser,
 } from 'firebase/auth'
 import { auth, googleProvider } from '@/services/firebase'
@@ -60,7 +61,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithGoogle = async () => {
     try {
-      const { signInWithRedirect } = await import('firebase/auth')
       await signInWithRedirect(auth, googleProvider)
     } catch (err: any) {
       console.error('Google sign in error:', err)
