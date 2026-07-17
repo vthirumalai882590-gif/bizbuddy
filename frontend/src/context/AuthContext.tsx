@@ -23,6 +23,7 @@ interface AuthContextValue {
   logout: () => Promise<void>
   resetPassword: (email: string) => Promise<void>
   updateUserProfile: (data: Partial<User>) => Promise<void>
+  signInAsDemo: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -100,6 +101,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await sendPasswordResetEmail(auth, email)
   }
 
+  const signInAsDemo = async () => {
+    setLoading(true)
+    const mockUser: User = {
+      uid:         'demo-user',
+      email:       'demo@bizbuddy.com',
+      displayName: 'Thirumalai',
+      language:    'en',
+      plan:        'free',
+      createdAt:   new Date(),
+    }
+    setUser(mockUser)
+    setLoading(false)
+  }
+
   const updateUserProfile = async (data: Partial<User>) => {
     if (!firebaseUser) throw new Error('Not authenticated')
     setUser((prev) => prev ? { ...prev, ...data } : null)
@@ -117,6 +132,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         logout,
         resetPassword,
         updateUserProfile,
+        signInAsDemo,
       }}
     >
       {children}
