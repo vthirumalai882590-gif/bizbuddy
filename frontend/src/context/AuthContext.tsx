@@ -7,6 +7,7 @@ import {
   updateProfile,
   sendPasswordResetEmail,
   signInWithRedirect,
+  getRedirectResult,
   type User as FirebaseUser,
 } from 'firebase/auth'
 import { auth, googleProvider } from '@/services/firebase'
@@ -45,6 +46,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   useEffect(() => {
+    // Process Google redirect sign-in result on page load
+    getRedirectResult(auth)
+      .then(async (result: any) => {
+        if (result?.user) {
+          const profile = await fetchUserProfile(result.user)
+          setUser(profile)
+        }
+      })
+      .catch((err: any) => {
+        console.error('[Auth] Redirect sign-in error:', err)
+      })
+
     const unsub = onAuthStateChanged(auth, async (fbUser) => {
       setFirebaseUser(fbUser)
       if (fbUser) {
