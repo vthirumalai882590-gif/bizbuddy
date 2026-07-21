@@ -1,11 +1,18 @@
 # Dependencies
 node_modules/
 
-# Local databases
+# Temporary & Build Folders
+.build/
+.catalyst/
+*.log
+*.zip
+zip-backend.js
+
+# Local databases & uploads
+data/
+uploads/
 backend/expenses.json
 backend/income.json
-
-# Media uploads (receipts)
 backend/uploads/
 
 # Environment files
@@ -16,12 +23,16 @@ backend/uploads/
 .env.production.local
 backend/.env
 frontend/.env
+bizbuddy-backend/.env
+bizbuddy-frontend/.env
 
 # Production build outputs
 dist/
 build/
 backend/dist/
 frontend/dist/
+bizbuddy-backend/dist/
+bizbuddy-frontend/dist/
 
 # OS specific files
 .DS_Store

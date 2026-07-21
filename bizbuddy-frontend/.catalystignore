@@ -1,0 +1,13 @@
+node_modules
+src
+public
+.env
+.env.*
+*.log
+*.ts
+*.tsx
+*.map
+vite.config.*
+tsconfig.*
+catalyst-config.json
+client-package.json

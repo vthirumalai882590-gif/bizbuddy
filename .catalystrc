@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "project": 1
+  },
+  "actives": {
+    "project": 1,
+    "env": 1
+  },
+  "projects": [
+    {
+      "idx": 1,
+      "id": "49881000000071001",
+      "name": "Bizbuddy",
+      "domain": {
+        "id": "50044179943",
+        "name": "bizbuddy-60077655392.development"
+      },
+      "timezone": "Asia/Kolkata",
+      "env": [
+        {
+          "idx": 1,
+          "id": "60077655392",
+          "name": "Development",
+          "type": 3
+        }
+      ]
+    }
+  ]
+}

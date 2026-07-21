@@ -1,0 +1,14 @@
+{
+  "functions": {
+    "source": "functions",
+    "targets": [
+      "bizbuddy-backend"
+    ]
+  },
+  "client": {
+    "source": "bizbuddy-frontend/dist"
+  },
+  "scripts": {
+    "predeploy": "npm run build"
+  }
+}

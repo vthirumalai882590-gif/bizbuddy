@@ -1,0 +1,7 @@
+{
+  "name": "bizbuddy-backend",
+  "stack": "node18",
+  "type": "Advanced IO",
+  "path": "index.js",
+  "authentication": "anonymous"
+}

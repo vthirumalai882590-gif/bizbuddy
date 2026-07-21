@@ -3,12 +3,16 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev:frontend": "npm run dev --workspace=frontend",
-    "dev:backend": "npm run dev --workspace=backend"
+    "dev:frontend": "npm run dev --workspace=bizbuddy-frontend",
+    "dev:backend": "npm run dev --workspace=bizbuddy-backend",
+    "build:frontend": "npm run build --workspace=bizbuddy-frontend",
+    "build:backend": "npm run build --workspace=bizbuddy-backend",
+    "build": "npm run build:backend && node scripts/sync-backend.js && npm run build:frontend",
+    "serve": "npm run build && npx catalyst serve"
   },
   "workspaces": [
-    "frontend",
-    "backend"
+    "bizbuddy-frontend",
+    "bizbuddy-backend"
   ],
   "devDependencies": {
     "concurrently": "^8.2.2"

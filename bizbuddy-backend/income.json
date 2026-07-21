@@ -1,0 +1,80 @@
+[
+  {
+    "id": "1781881792822",
+    "userId": "demo",
+    "currency": "INR",
+    "amount": 3000,
+    "source": "sales",
+    "description": "Wheat",
+    "date": "2026-06-19",
+    "customer": "Sanjay",
+    "paymentMethod": "upi",
+    "createdAt": "2026-06-19T15:09:52.822Z",
+    "updatedAt": "2026-06-19T15:09:52.822Z"
+  },
+  {
+    "id": "1781881703086",
+    "userId": "demo",
+    "currency": "INR",
+    "amount": 10000,
+    "source": "sales",
+    "description": "oil",
+    "date": "2026-06-19",
+    "customer": "sam",
+    "paymentMethod": "upi",
+    "createdAt": "2026-06-19T15:08:23.086Z",
+    "updatedAt": "2026-06-19T15:08:23.086Z"
+  },
+  {
+    "id": "1781862189520",
+    "userId": "demo",
+    "currency": "INR",
+    "amount": 1200,
+    "source": "sales",
+    "description": "oil fs",
+    "date": "2026-06-19",
+    "customer": "Walk-in",
+    "paymentMethod": "upi",
+    "createdAt": "2026-06-19T09:43:09.520Z",
+    "updatedAt": "2026-06-19T09:43:09.520Z"
+  },
+  {
+    "id": "1781881792822_Bo42",
+    "userId": "Bo42dieVScXYQ5X9uZLElFIyH4o2",
+    "currency": "INR",
+    "amount": 3000,
+    "source": "sales",
+    "description": "Wheat",
+    "date": "2026-06-19",
+    "customer": "Sanjay",
+    "paymentMethod": "upi",
+    "createdAt": "2026-06-19T15:09:52.822Z",
+    "updatedAt": "2026-06-19T15:09:52.822Z"
+  },
+  {
+    "id": "1781881703086_Bo42",
+    "userId": "Bo42dieVScXYQ5X9uZLElFIyH4o2",
+    "currency": "INR",
+    "amount": 10000,
+    "source": "sales",
+    "description": "oil",
+    "date": "2026-06-19",
+    "customer": "sam",
+    "paymentMethod": "upi",
+    "createdAt": "2026-06-19T15:08:23.086Z",
+    "updatedAt": "2026-06-19T15:08:23.086Z"
+  },
+  {
+    "id": "1781862189520_Bo42",
+    "userId": "Bo42dieVScXYQ5X9uZLElFIyH4o2",
+    "currency": "INR",
+    "amount": 1200,
+    "source": "sales",
+    "description": "oil fs",
+    "date": "2026-06-19",
+    "customer": "Walk-in",
+    "paymentMethod": "upi",
+    "createdAt": "2026-06-19T09:43:09.520Z",
+    "updatedAt": "2026-06-19T09:43:09.520Z"
+  }
+]

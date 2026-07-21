@@ -1,0 +1,9 @@
+node_modules
+src
+*.ts
+*.log
+expenses.json
+income.json
+receipts.json
+website.json
+catalyst-config.json
